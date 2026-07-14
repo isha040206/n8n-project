@@ -1,0 +1,384 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 15,
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1104,
+        304
+      ],
+      "id": "a0048801-1270-40a0-a858-b77664226be6",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c95a3500-27cc-4692-abee-dbec30b2182a",
+              "leftValue": "={{ $json[\"Birthdate\"] }}\n",
+              "rightValue": "={{ DateTime.now().setZone('Asia/Kolkata').toFormat('dd/MM') }}\n",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        336
+      ],
+      "id": "85e965b2-b37f-42e3-b06a-b568b2e58c60",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$json[\"Email id\"]}}",
+        "subject": "={{ \"Happy Birthday \" + $json[\"Name\"] + \" 🎉\" }}",
+        "emailType": "text",
+        "message": "=Dear {{$json[\"Name\"]}},  Wishing you a very Happy Birthday 🎂🎉 Have a wonderful year ahead.  Best Regards, Team",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {},
+              {
+                "property": "employeePhoto"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        672
+      ],
+      "id": "158e73dc-265c-450f-a542-298d57f41b7a",
+      "name": "Send a message",
+      "webhookId": "c6524dc2-e268-4f32-acd9-29d9e2eaebfa",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dodEM3P20xgYKj7F",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -608,
+        304
+      ],
+      "id": "a45e2326-e787-469b-af13-b17c022199c4",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e86eb60-d292-4934-a9f2-1a88d148a296",
+              "name": "message",
+              "value": "={{\"Wishing you a very Happy Birthday \" + $json[\"Name\"] + \"! May your day be filled with joy, success, and wonderful memories. Have a fantastic year ahead!\"}}",
+              "type": "string"
+            },
+            {
+              "id": "fbcd116a-01d7-45bd-adef-3cb39dc8db6d",
+              "name": "imagePrompt",
+              "value": "={{\"elegant luxury birthday background card with golden balloons cake confetti flowers premium corporate celebration design high quality\"}}",
+              "type": "string"
+            },
+            {
+              "id": "eaec7cb2-bb66-4107-9273-b5706df54781",
+              "name": "imageUrl",
+              "value": "={{\"https://image.pollinations.ai/prompt/beautiful%20premium%20happy%20birthday%20greeting%20background%20with%20luxury%20balloons%20cake%20confetti%20flowers%20elegant%20corporate%20festive%20design%20high%20quality\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        512,
+        320
+      ],
+      "id": "f2a5af37-5eb8-4c76-a6c3-9ed4f3a7a97f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "employeePhoto"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        512
+      ],
+      "id": "cbd17f0f-19d7-4933-9347-9901d08a096f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"Photo\"] }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        160
+      ],
+      "id": "8d6079bd-8b2b-43b2-ad2a-7cf26702d451",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1072,
+        432
+      ],
+      "id": "4f57faf1-2645-4bc5-8f91-4db2990e44b4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "item.binary.data.fileName = $json[\"Name\"] + \".jpg\";\nitem.binary.employeePhoto.fileName = \"BirthdayCard_\" + $json[\"Name\"] + \".jpg\";\n\nreturn item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        400
+      ],
+      "id": "aa34d85c-c653-4746-976d-19ed4461f9d5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1GKXmh-SGLOx5L9vemu6DUDTYLliFwE4aJ2fYk9hdbEo",
+          "mode": "list",
+          "cachedResultName": "BirthdataSheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GKXmh-SGLOx5L9vemu6DUDTYLliFwE4aJ2fYk9hdbEo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1369347556,
+          "mode": "list",
+          "cachedResultName": "Form responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GKXmh-SGLOx5L9vemu6DUDTYLliFwE4aJ2fYk9hdbEo/edit#gid=1369347556"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -896,
+        304
+      ],
+      "id": "fbf26dbb-018b-4a88-a6ce-6732e76c4800",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LEEGd5fL3bs7WkZJ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "f1de25fa-2489-4e29-b0da-39fb748f9bf0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5243382aa1198588f4c698f6ff2fbe5276b3bcfe7540d8204afdc46a9be7f90"
+  },
+  "id": "52WbJejcS0dK83Qq",
+  "tags": []
+}
